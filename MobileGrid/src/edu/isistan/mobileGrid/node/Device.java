@@ -32,8 +32,9 @@ public class Device extends Entity implements Node, DeviceListener {
 	public static final int EVENT_TYPE_STATUS_NOTIFICATION = 4;
 	public static final int EVENT_TYPE_SCREEN_ACTIVITY = 5;
 	public static final int EVENT_NETWORK_ACTIVITY = 6;
+    public static final int EVENT_TYPE_DISCONECT_DEVICE = 7;
 
-	/* Size of message buffer for transfers in bytes */
+    /* Size of message buffer for transfers in bytes */
 	public static int MESSAGES_BUFFER_SIZE = 1024 * 1024; // 1mb
                                                                     // //128*1024
 																	// //128k

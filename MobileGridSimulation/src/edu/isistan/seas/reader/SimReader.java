@@ -106,9 +106,11 @@ public class SimReader {
 					this.loadWifiSignalStrength();
 				else if (line.startsWith(";userActivity"))
 					this.loadUserActivity();
+				else if (line.startsWith(";connectionRelatedEventsFile"))
+					this.loadConnectionRelatedEventsFile();
 				else if (line.startsWith(";networkActivity")) {
-				    this.loadNetworkActivity();
-                }
+					this.loadNetworkActivity();
+				}
 				else if (line.startsWith(";jobsEvent"))
                     executorService.execute(this.loadJobs());
 				else throw new IllegalStateException(this.line+" is not a valid parameter");
@@ -326,6 +328,29 @@ public class SimReader {
 			if(loader==null)
 				System.err.println("There is no such device "+nodeId);
 			loader.setBatteryFile(batFile);
+			this.nextLine();
+		}
+	}
+
+	private void loadConnectionRelatedEventsFile() throws IOException {
+		this.nextLine();
+		// todo check simulation tuple
+
+/*		StringTokenizer st = new StringTokenizer(line, ";");
+		String connectionRelatedProfile = st.nextToken();
+		String[] parts = connectionRelatedProfile.split("/");
+		connectionRelatedProfile = parts[parts.length-1];
+		simulationTuple.set_connection_profile(connectionRelatedProfile);
+		*/
+
+		while(!this.line.startsWith(";")) {
+			StringTokenizer st = new StringTokenizer(line, ";");
+			String connectionFile = st.nextToken();
+			String nodeId = st.nextToken().trim();
+			DeviceLoader loader=this.devices.get(nodeId);
+			if(loader==null)
+				System.err.println("There is no such device "+nodeId);
+			loader.setConnectionFile(connectionFile);
 			this.nextLine();
 		}
 	}

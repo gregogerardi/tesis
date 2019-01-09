@@ -108,7 +108,12 @@ public class DeviceLoader extends Thread {
      * Represent the signal strength value of a node (in dBm) with respect to the Access Point when its networking hardware is set in infrastructure mode
      */
 	private short wifiSignalStrength;
-	
+
+	/**
+	 * The name of the file containing this device's connection related events profile for connect and disconnect simulations.
+	 */
+	private String connectionFile;
+
 	public DeviceLoader(String nodeName, long flops, int maxActiveJobs, boolean networkEnergyManagerEnable, short wifiSignalStrength) {
 		this.nodeName = nodeName;
 		this.flops = flops;
@@ -157,7 +162,7 @@ public class DeviceLoader extends Thread {
 		List<ProfileData> batteryFullScreenOffProfileData = this.readBattery(this.batteryFullScreenOffFile);
 		// TODO: uncomment
         // List<ProfileData> batteryFullScreenOnProfileData = this.readBattery(this.batteryFullScreenOffFile);
-		
+
 		DefaultNetworkEnergyManager networkEnergyManager = MANAGER_FACTORY.createNetworkEnergyManager(networkEnergyManagerEnable, wifiSignalStrength);
 		DefaultBatteryManager batteryManager = MANAGER_FACTORY.createBatteryManager(3, startCharge, startUptime, batteryCapacityInJoules);
 
@@ -170,7 +175,7 @@ public class DeviceLoader extends Thread {
 		// TODO: placeholder, remove once we have profiles for CPU 100% and screen on.
         for(ProfileData data: batteryFullScreenOffProfileData)
             batteryManager.addProfileData(2, data);
-		
+		//todo grego agregar un manager para eventos de conexion junto a sus dependencias
 		DefaultExecutionManager executionManager = MANAGER_FACTORY.createExecutionManager();
 		executionManager.setMips(this.flops);
 
@@ -191,7 +196,7 @@ public class DeviceLoader extends Thread {
 		batteryManager.setSEASExecutionManager(executionManager);
 						
 		this.readCPUEvents();
-
+		this.readConnectionEvents();
 		this.readUserActivityEvents();
 		this.readNetworkActivityEvents();
 
@@ -202,7 +207,49 @@ public class DeviceLoader extends Thread {
 		this.simLock.unlock();
 	}
 
-    /**
+	/**
+	 * Parses the Connection trace file specified by {@link DeviceLoader#connectionFile}. This parameter must not be null.
+	 */
+	private void readConnectionEvents() {
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(new File(this.connectionFile)));
+			String line=reader.readLine();
+			while(line != null){
+				if(line.trim().equals("")){
+					line = reader.readLine();
+					break;
+				}
+				StringTokenizer st = new StringTokenizer(line, ";");
+				st.nextToken();
+				long time = Long.parseLong(st.nextToken()) + this.startTime;
+				st.nextToken();
+				double cpu = Double.parseDouble(st.nextToken());
+				Event event;
+
+				event = Event.createEvent(Event.NO_SOURCE, time, this.deviceId, Device.EVENT_TYPE_CPU_UPDATE, cpu);
+
+				this.simLock.lock();
+				Simulation.addEvent(event);
+				this.simLock.unlock();
+
+				line = reader.readLine();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	/**
      * Parses the CPU trace file specified by {@link DeviceLoader#cpuFile}. This parameter must not be null.
      */
 	private void readCPUEvents() {
@@ -400,6 +447,12 @@ public class DeviceLoader extends Thread {
         }
     }
 
+	public void setConnectionFile(String connectionFile) throws FileNotFoundException {
+		this.connectionFile = connectionFile;
+		if (!new File(this.connectionFile).exists()) {
+			throw new FileNotFoundException();
+		}
+	}
     public String getCPUFile() {
         return cpuFile;
     }
@@ -449,4 +502,5 @@ public class DeviceLoader extends Thread {
     public void setBatteryCapacityInJoules(long batteryCapacityInJoules) {
         this.batteryCapacityInJoules = batteryCapacityInJoules;
     }
+
 }
