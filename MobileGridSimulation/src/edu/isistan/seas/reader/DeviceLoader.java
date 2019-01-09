@@ -270,7 +270,7 @@ public class DeviceLoader extends Thread {
 				Event event;
 
 				event = Event.createEvent(Event.NO_SOURCE, time, this.deviceId, Device.EVENT_TYPE_CPU_UPDATE, cpu);
-				
+
 				this.simLock.lock();
 				Simulation.addEvent(event);
 				this.simLock.unlock();
