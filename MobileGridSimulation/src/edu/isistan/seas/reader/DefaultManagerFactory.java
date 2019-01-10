@@ -5,6 +5,7 @@ import edu.isistan.mobileGrid.node.Device;
 import edu.isistan.mobileGrid.node.ExecutionManager;
 import edu.isistan.mobileGrid.node.NetworkEnergyManager;
 import edu.isistan.seas.node.DefaultBatteryManager;
+import edu.isistan.seas.node.DefaultConnectionManager;
 import edu.isistan.seas.node.DefaultExecutionManager;
 import edu.isistan.seas.node.DefaultNetworkEnergyManager;
 
@@ -18,6 +19,11 @@ public class DefaultManagerFactory implements ManagerFactory {
 	@Override
 	public DefaultExecutionManager createExecutionManager() {
 		return new DefaultExecutionManager();
+	}
+
+	@Override
+	public DefaultConnectionManager createConnectionManager() {
+		return new DefaultConnectionManager();
 	}
 
 	@Override

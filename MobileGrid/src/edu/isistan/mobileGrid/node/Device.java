@@ -32,7 +32,8 @@ public class Device extends Entity implements Node, DeviceListener {
 	public static final int EVENT_TYPE_STATUS_NOTIFICATION = 4;
 	public static final int EVENT_TYPE_SCREEN_ACTIVITY = 5;
 	public static final int EVENT_NETWORK_ACTIVITY = 6;
-    public static final int EVENT_TYPE_DISCONECT_DEVICE = 7;
+    public static final int EVENT_TYPE_DISCONNECT_DEVICE = 7;
+    public static final int EVENT_TYPE_CONNECT_DEVICE = 8;
 
     /* Size of message buffer for transfers in bytes */
 	public static int MESSAGES_BUFFER_SIZE = 1024 * 1024; // 1mb
@@ -81,7 +82,12 @@ public class Device extends Entity implements Node, DeviceListener {
     /**
      * Helper for handling all logic related to battery depletion.
      */
-	protected BatteryManager batteryManager;
+    protected BatteryManager batteryManager;
+
+    /**
+     * Helper for handling all logic related to connection and disconnection events.
+     */
+    protected ConnectionManager connectionManager;
 
     /**
      * Helper for handling job execution simulation based on available CPU.
@@ -265,6 +271,12 @@ public class Device extends Entity implements Node, DeviceListener {
             case Device.EVENT_TYPE_DEVICE_START:
                 onStartup();
                 break;
+            case Device.EVENT_TYPE_DISCONNECT_DEVICE:
+                connectionManager.onDisconnect();
+                break;
+            case Device.EVENT_TYPE_CONNECT_DEVICE:
+                connectionManager.onConnect();
+                break;
             case Device.EVENT_TYPE_STATUS_NOTIFICATION:
                 // notify the proxy about my status
                 UpdateMsg updateMsg = new UpdateMsg(this.getName(), (int) batteryManager.getCurrentSOC(),
@@ -290,6 +302,10 @@ public class Device extends Entity implements Node, DeviceListener {
                 break;
 		}
 	}
+
+    private void onDisconectFromNetwork() {
+
+    }
 
     protected <T> void queueMessageTransfer(Node destination, T data, long payloadSize) {
 	    queueMessageTransfer(destination, data, payloadSize, TransferInfo.PRIORITY_DEFAULT);

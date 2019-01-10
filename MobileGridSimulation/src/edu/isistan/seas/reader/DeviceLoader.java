@@ -13,10 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import edu.isistan.mobileGrid.network.NetworkModel;
 import edu.isistan.mobileGrid.node.Device;
-import edu.isistan.seas.node.DefaultBatteryManager;
-import edu.isistan.seas.node.DefaultExecutionManager;
-import edu.isistan.seas.node.DefaultNetworkEnergyManager;
-import edu.isistan.seas.node.ProfileData;
+import edu.isistan.seas.node.*;
 import edu.isistan.simulator.Event;
 import edu.isistan.simulator.Simulation;
 
@@ -175,12 +172,13 @@ public class DeviceLoader extends Thread {
 		// TODO: placeholder, remove once we have profiles for CPU 100% and screen on.
         for(ProfileData data: batteryFullScreenOffProfileData)
             batteryManager.addProfileData(2, data);
-		//todo grego agregar un manager para eventos de conexion junto a sus dependencias
 		DefaultExecutionManager executionManager = MANAGER_FACTORY.createExecutionManager();
 		executionManager.setMips(this.flops);
 
 		Device device = MANAGER_FACTORY.createDevice(this.nodeName, batteryManager, executionManager, networkEnergyManager);
-		
+
+		DefaultConnectionManager connectionManager = MANAGER_FACTORY.createConnectionManager();
+
 		simLock.lock();
 		NetworkModel.getModel().addNewNode(device);
 		Simulation.addEntity(device);
@@ -188,6 +186,7 @@ public class DeviceLoader extends Thread {
 		simLock.unlock();
 
 		// Configure dependencies between the device and its managers.
+		connectionManager.setDevice(device);
 		batteryManager.setDevice(device);
 		executionManager.setDevice(device);
 		networkEnergyManager.setDevice(device);
@@ -208,9 +207,10 @@ public class DeviceLoader extends Thread {
 	}
 
 	/**
-	 * Parses the Connection trace file specified by {@link DeviceLoader#connectionFile}. This parameter must not be null.
+	 * Parses the Connection trace file specified by {@link DeviceLoader#connectionFile}. if this parameter is null we assume there is 0 connection related events.
 	 */
 	private void readConnectionEvents() {
+		if (this.connectionFile==null)return;
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new FileReader(new File(this.connectionFile)));
@@ -220,19 +220,25 @@ public class DeviceLoader extends Thread {
 					line = reader.readLine();
 					break;
 				}
-				StringTokenizer st = new StringTokenizer(line, ";");
-				st.nextToken();
-				long time = Long.parseLong(st.nextToken()) + this.startTime;
-				st.nextToken();
-				double cpu = Double.parseDouble(st.nextToken());
-				Event event;
-
-				event = Event.createEvent(Event.NO_SOURCE, time, this.deviceId, Device.EVENT_TYPE_CPU_UPDATE, cpu);
-
+				if(line.startsWith("#")){
+					line = reader.readLine();
+					break;
+				}
+				Event event = null;
+				String[] data = line.split(";");
+				long time = Long.parseLong(data[1])+this.startTime;
+				if(line.startsWith("LEAVE_NETWORK")) {
+					event = Event.createEvent(Event.NO_SOURCE, time, this.deviceId, Device.EVENT_TYPE_DISCONNECT_DEVICE, null);
+				}
+				if(line.startsWith("ENTER_NETWORK")) {
+					event = Event.createEvent(Event.NO_SOURCE, time, this.deviceId, Device.EVENT_TYPE_CONNECT_DEVICE, null);
+				}
+				if (event==null){
+					throw new IllegalStateException(line+" is not a valid parameter");
+				}
 				this.simLock.lock();
 				Simulation.addEvent(event);
 				this.simLock.unlock();
-
 				line = reader.readLine();
 			}
 		} catch (IOException e) {

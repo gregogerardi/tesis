@@ -217,7 +217,7 @@ public class DefaultBatteryManager implements BatteryManager {
 		this.reportedCharge = level;
 		
 		// uncomment for debugging
-		Logger.appendDebugInfo(this.device.getName()+";BAT;"+this.lastMeasurement+";"+this.lastCharge+";"+lastAddedEvent.getEventId()+"\n");
+		//Logger.appendDebugInfo(this.device.getName()+";BAT;"+this.lastMeasurement+";"+this.lastCharge+";"+lastAddedEvent.getEventId()+"\n");
 		
 		this.moveToNext(this.lastCharge, this.currentProfile);
 		double nextEventCharge = this.profiles[this.currentProfile].first().getToCharge();

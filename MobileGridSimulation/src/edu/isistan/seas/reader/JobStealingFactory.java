@@ -5,6 +5,7 @@ import edu.isistan.mobileGrid.node.Device;
 import edu.isistan.mobileGrid.node.ExecutionManager;
 import edu.isistan.mobileGrid.node.NetworkEnergyManager;
 import edu.isistan.seas.node.DefaultBatteryManager;
+import edu.isistan.seas.node.DefaultConnectionManager;
 import edu.isistan.seas.node.DefaultExecutionManager;
 import edu.isistan.seas.node.DefaultNetworkEnergyManager;
 import edu.isistan.seas.node.jobstealing.JSDevice;
@@ -35,4 +36,10 @@ public class JobStealingFactory implements ManagerFactory {
 		return new JSDevice(name, bt, em, nem);
 	}
 
+	//todo provide a connection events aware treatment for the jobstealin logic
+	//for now we use the default connectionManager
+	@Override
+	public DefaultConnectionManager createConnectionManager() {
+		return new DefaultConnectionManager();
+	}
 }
