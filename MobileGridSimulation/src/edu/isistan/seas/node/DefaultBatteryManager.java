@@ -220,20 +220,7 @@ public class DefaultBatteryManager implements BatteryManager {
 		//Logger.appendDebugInfo(this.device.getName()+";BAT;"+this.lastMeasurement+";"+this.lastCharge+";"+lastAddedEvent.getEventId()+"\n");
 		
 		this.moveToNext(this.lastCharge, this.currentProfile);
-		double nextEventCharge = this.profiles[this.currentProfile].first().getToCharge();
-		
-		 // Commented by Matias: The current and the next state of charge are joint with a line whose equation is
-		 // (y - b) / a = x, where y is the next state of charge, b is the current charge and a is the slope of
-		 // the line that join both state of charge. The equation is used to know the time when the next state
-		 // charge will occur. That time is added to the time when the current state of charge happened
-		 // (lastMeasurement).
-		double nTime = this.lastMeasurement + (nextEventCharge - this.lastCharge) / this.profiles[this.currentProfile].first().getSlope();
-		
-		if(nTime < this.lastMeasurement)
-			throw new IllegalStateException("Next event time is previous (" + nTime + ") to current time (" + this.lastMeasurement + ")");
-		this.lastAddedEvent = Event.createEvent(Event.NO_SOURCE, (long) nTime, this.device.getId(),
-                Device.EVENT_TYPE_BATTERY_UPDATE, this.profiles[this.currentProfile].first().getToCharge());
-		Simulation.addEvent(this.lastAddedEvent);
+		generateNewSOCNotification();
 		this.updateEstimatedUptime();
 	}
 
@@ -273,6 +260,15 @@ public class DefaultBatteryManager implements BatteryManager {
 		this.lastMeasurement = Simulation.getTime();
 		this.lastEventTime = Simulation.getTime();
 		this.startTime = Simulation.getTime();
+		generateNewSOCNotification();
+
+		// debugging line
+		// Logger.appendDebugInfo(this.device.getName()+";INI;"+this.lastMeasurement+";"+this.lastCharge+";futEvent:"+lastAddedEvent.getEventId()+"\n");
+
+		Logger.logEntity(device, "Device started");
+	}
+
+	private void generateNewSOCNotification() {
 		double nextEventCharge = this.profiles[this.currentProfile].first().getToCharge();
 		double nTime = this.lastMeasurement + (nextEventCharge - this.lastCharge) / this.profiles[this.currentProfile].first().getSlope();
 		if(nTime < this.lastMeasurement) {
@@ -283,11 +279,6 @@ public class DefaultBatteryManager implements BatteryManager {
 		this.lastAddedEvent = Event.createEvent(Event.NO_SOURCE, (long) nTime, this.device.getId(),
                 Device.EVENT_TYPE_BATTERY_UPDATE, this.profiles[this.currentProfile].first().getToCharge());
 		Simulation.addEvent(this.lastAddedEvent);
-		
-		// debugging line
-		// Logger.appendDebugInfo(this.device.getName()+";INI;"+this.lastMeasurement+";"+this.lastCharge+";futEvent:"+lastAddedEvent.getEventId()+"\n");
-
-		Logger.logEntity(device, "Device started");
 	}
 
 	@Override

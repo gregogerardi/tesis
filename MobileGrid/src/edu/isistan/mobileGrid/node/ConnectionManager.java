@@ -19,4 +19,9 @@ public interface ConnectionManager {
      */
 
     boolean isConnected();
+
+    /**
+     * It is call when the device shutdown
+     */
+    void shutdown();
 }

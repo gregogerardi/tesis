@@ -3,3 +3,4 @@ MobileGridSimulation/db/simulationdb.properties
 *.class
 MobileGrid/bin/edu/isistan/mobileGrid/node/Device$JobMessageHandler.class
 *.properties
+*.class

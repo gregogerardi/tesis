@@ -3,16 +3,13 @@ package edu.isistan.seas.node.jobstealing;
 import edu.isistan.mobileGrid.network.Message;
 import edu.isistan.mobileGrid.network.Node;
 import edu.isistan.mobileGrid.network.UpdateMsg;
-import edu.isistan.mobileGrid.node.BatteryManager;
-import edu.isistan.mobileGrid.node.Device;
-import edu.isistan.mobileGrid.node.ExecutionManager;
-import edu.isistan.mobileGrid.node.NetworkEnergyManager;
+import edu.isistan.mobileGrid.node.*;
 
 public class JSDevice extends Device {
 
 	public JSDevice(String name, BatteryManager bt, ExecutionManager em,
-			NetworkEnergyManager nem) {
-		super(name, bt, em, nem);		
+					NetworkEnergyManager nem, ConnectionManager cm) {
+		super(name, bt, em, nem, cm);
 	}
 	
 	@Override

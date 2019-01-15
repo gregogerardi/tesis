@@ -1,9 +1,6 @@
 package edu.isistan.seas.reader;
 
-import edu.isistan.mobileGrid.node.BatteryManager;
-import edu.isistan.mobileGrid.node.Device;
-import edu.isistan.mobileGrid.node.ExecutionManager;
-import edu.isistan.mobileGrid.node.NetworkEnergyManager;
+import edu.isistan.mobileGrid.node.*;
 import edu.isistan.seas.node.DefaultBatteryManager;
 import edu.isistan.seas.node.DefaultConnectionManager;
 import edu.isistan.seas.node.DefaultExecutionManager;
@@ -17,7 +14,7 @@ public interface ManagerFactory {
 
 	DefaultNetworkEnergyManager createNetworkEnergyManager(boolean enableNetworkExecutionManager, short wifiSignalString);
 	
-	Device createDevice(String name, BatteryManager bt, ExecutionManager em,	NetworkEnergyManager nem);
+	Device createDevice(String name, BatteryManager bt, ExecutionManager em, NetworkEnergyManager nem, ConnectionManager cm);
 
     DefaultConnectionManager createConnectionManager();
 }

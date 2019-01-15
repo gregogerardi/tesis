@@ -174,10 +174,9 @@ public class DeviceLoader extends Thread {
             batteryManager.addProfileData(2, data);
 		DefaultExecutionManager executionManager = MANAGER_FACTORY.createExecutionManager();
 		executionManager.setMips(this.flops);
-
-		Device device = MANAGER_FACTORY.createDevice(this.nodeName, batteryManager, executionManager, networkEnergyManager);
-
 		DefaultConnectionManager connectionManager = MANAGER_FACTORY.createConnectionManager();
+		Device device = MANAGER_FACTORY.createDevice(this.nodeName, batteryManager, executionManager, networkEnergyManager, connectionManager);
+
 
 		simLock.lock();
 		NetworkModel.getModel().addNewNode(device);
@@ -216,14 +215,8 @@ public class DeviceLoader extends Thread {
 			reader = new BufferedReader(new FileReader(new File(this.connectionFile)));
 			String line=reader.readLine();
 			while(line != null){
-				if(line.trim().equals("")){
+				while (line.startsWith("#")||line.trim().equals(""))
 					line = reader.readLine();
-					break;
-				}
-				if(line.startsWith("#")){
-					line = reader.readLine();
-					break;
-				}
 				Event event = null;
 				String[] data = line.split(";");
 				long time = Long.parseLong(data[1])+this.startTime;

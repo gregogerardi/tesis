@@ -120,11 +120,12 @@ public class Device extends Entity implements Node, DeviceListener {
 	 */
 	//private boolean informSOC = true;
 
-	public Device(String name, BatteryManager bt, ExecutionManager em, NetworkEnergyManager nem) {
+	public Device(String name, BatteryManager bt, ExecutionManager em, NetworkEnergyManager nem, ConnectionManager cm) {
 		super(name);
 		this.batteryManager = bt;
 		this.executionManager = em;
 		this.networkEnergyManager = nem;
+	    this.connectionManager =cm;
 	}
 
     /**
@@ -242,7 +243,8 @@ public class Device extends Entity implements Node, DeviceListener {
 
 	@Override
 	public boolean isOnline() {
-		return this.isActive();
+//		return this.isActive();
+        return connectionManager.isConnected();
 	}
 
 	@Override
@@ -272,9 +274,19 @@ public class Device extends Entity implements Node, DeviceListener {
                 onStartup();
                 break;
             case Device.EVENT_TYPE_DISCONNECT_DEVICE:
+                JobStatsUtils.deviceLeftTopology(this, Simulation.getTime());
+                if (nextStatusNotificationEvent != null) {
+                    Simulation.removeEvent(nextStatusNotificationEvent);
+                }
+                SchedulerProxy.PROXY.remove(this);
                 connectionManager.onDisconnect();
                 break;
             case Device.EVENT_TYPE_CONNECT_DEVICE:
+                SchedulerProxy.PROXY.addDevice(this);
+                //todo check the JobStatsUtils class, i just moved the next line from onStartup() to here
+                JobStatsUtils.deviceJoinTopology(this, this.batteryManager.getStartTime());
+                SchedulerProxy.PROXY.updateDeviceSOC(this, getBatteryLevel());
+                setNextStatusNotification();
                 connectionManager.onConnect();
                 break;
             case Device.EVENT_TYPE_STATUS_NOTIFICATION:
@@ -284,12 +296,7 @@ public class Device extends Entity implements Node, DeviceListener {
                 queueMessageTransfer(SchedulerProxy.PROXY, updateMsg, UpdateMsg.STATUS_MSG_SIZE_IN_BYTES);
 
                 // plan the next status notification event
-                if (Device.STATUS_NOTIFICATION_TIME_FREQ > 0){
-                    long nextNotificationTime = Simulation.getTime() + Device.STATUS_NOTIFICATION_TIME_FREQ;
-                    this.nextStatusNotificationEvent=Event.createEvent(Event.NO_SOURCE, nextNotificationTime,
-                            this.getId(), Device.EVENT_TYPE_STATUS_NOTIFICATION,null);
-                    Simulation.addEvent(this.nextStatusNotificationEvent);
-                }
+                setNextStatusNotification();
                 break;
             case Device.EVENT_TYPE_SCREEN_ACTIVITY:
                 Boolean flag = (Boolean) event.getData();
@@ -326,12 +333,14 @@ public class Device extends Entity implements Node, DeviceListener {
         transferInfoMap.put(transferInfo.getId(), transferInfo);
         transferInfo.setPriority(priority);
         transfersPending.add(transferInfo);
-
+/*        if (!this.connectionManager.isConnected()){
+            Logger.logEntity(this,"The device is disconnected from network and the job's results can't be send");
+            return;
+        }*/
         if (transfersPending.size() == 1 && !isReceiving) {
             int messageSize = transferInfo.getMessageSize(MESSAGES_BUFFER_SIZE);
             if (this.networkEnergyManager.onSendData(this, destination, messageSize)) {
                 // if energy is enough to send the message
-
                 getMessageHandler(data).onWillSendMessage(transferInfo);
 
                 NetworkModel.getModel().send(this, destination, transferInfo.getId(), messageSize, data,
@@ -346,19 +355,22 @@ public class Device extends Entity implements Node, DeviceListener {
      * Called when the device boots up.
      */
 	private void onStartup() {
-        SchedulerProxy.PROXY.addDevice(this);
+        //SchedulerProxy.PROXY.addDevice(this);
         this.batteryManager.startWorking();
-        JobStatsUtils.deviceJoinTopology(this, this.batteryManager.getStartTime());
-        SchedulerProxy.PROXY.updateDeviceSOC(this, getBatteryLevel());
+        //JobStatsUtils.deviceJoinTopology(this, this.batteryManager.getStartTime());
+        //SchedulerProxy.PROXY.updateDeviceSOC(this, getBatteryLevel());
+    }
+
+    private void setNextStatusNotification() {
         if (Device.STATUS_NOTIFICATION_TIME_FREQ > 0) {
             long nextNotificationTime = Simulation.getTime() + Device.STATUS_NOTIFICATION_TIME_FREQ;
-            this.nextStatusNotificationEvent=Event.createEvent(Event.NO_SOURCE, nextNotificationTime, this.getId(),
+            this.nextStatusNotificationEvent= Event.createEvent(Event.NO_SOURCE, nextNotificationTime, this.getId(),
                     Device.EVENT_TYPE_STATUS_NOTIFICATION,null);
             Simulation.addEvent(this.nextStatusNotificationEvent);
         }
     }
 
-	/**
+    /**
 	 * Called when the device runs out of battery.
 	 */
 	public void onBatteryDepletion() {
@@ -369,6 +381,7 @@ public class Device extends Entity implements Node, DeviceListener {
         SchedulerProxy.PROXY.remove(this);
 		this.executionManager.shutdown();
 		this.batteryManager.shutdown();
+		this.connectionManager.shutdown();
 		this.setActive(false);
 
 		for (JobTransfer jobTransfer : incomingJobTransfers.values()) {

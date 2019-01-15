@@ -34,10 +34,12 @@ public class WifiLink extends Link {
 		this.rssi = rssi;
 	}
 
-	@Override
+//todo unnecesary Override of method? check this
+
+/*	@Override
 	public boolean canSend(Node scr, Node dst) {
 		return source.contains(scr) && destinations.contains(dst);
-	}
+	}*/
 	
 	@Override
 	public long getTransmissionTime(int size){
