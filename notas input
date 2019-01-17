@@ -1,0 +1,34 @@
+input:
+
+first argument of the run its the main config file
+
+using as example TEST[...] the structure is:
+
+    ;networkEnergyManagementEnable: true //set the simulation to take in consideration the energy waste of network's related tasks
+
+    ;nodeFile //next line indicates the path of the nodes config file
+
+        this file indicates in one row for each device:
+
+        [device_name];[device_flops];[max_concurrent_active_jobs_supported](;[battery_capacity_in_joules])?
+
+    ;loadBalancing: edu.isistan.gridgain.spi.loadbalacing.energyaware.GridEnergyAwareLoadBalancing //is the scheduler class selected, if the scheduler has argument should be indicated next to the class name
+
+    ;comparator: edu.isistan.gridgain.information.comparator.seas.EnhancedSEASComparator // is the comparator used to choose the best device for CPU intensive tasks
+
+    ;batteryFile // next lines indicates the path to the battery base consumption files for every device into the simulation, in format [file-path]; [node-id]
+		this file indicates the complete profile of battery states for a cpu usage close to 0% in format: NEW_BATTERY_STATE_NODE;[TIME];2276;[BATTERY LEVEL]
+		it also contain a first line indicating the arrive time of the node and a last one indicating the leave time of the node.
+
+    ;batteryFullCpuUsageFile // next lines indicates the path to the battery consumption files with a cpu usage of 100% for every device into the simulation,
+		in format [file-path]; [node-id]
+
+    ;cpuFile // next lines indicates the path to the cpu base consumption files for every device into the simulation, in format [file-path]; [node-id]
+
+    ;jobsEvent // next line indicates the path to the file containing the list of jobs events to load into the simulation
+			// Expected format for each line in the configuration file:
+			// [jobId];[# of CPU cycles required to complete];[arrival time](;[input size];[output size])?
+
+	;wifiSignalStrength //next line indicates the wifi signal strength for each device in format : [strength];[device-id]
+	
+	

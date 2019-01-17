@@ -1,0 +1,77 @@
+    Device: add event type "EVENT_LEAVE_NETWORK = 7" and "EVENT_ENTER_NETWORK = 8"
+    declared the use of a new handler for this kind of events
+
+    change the way we check for a message to be fully received, // por ahora no
+    to take in consideration the possibility of missing some of the intermediary messages, (maybe within the TransferInfo Class?)
+
+    CHEQUEAK SI EL ACK ES POR FRAGMENTO O POR MENSAJJE COMPLETO // es por fragmento enviado, lo genera la clase NetworkModel ante un evento de mensaje que alcanzo su destino
+
+    check not only for the energy remaining when a message is received or send, but also for the remaining time this device
+    will be connected to the network. check also in queueMessageTransfer. Is it okey to check for remaining time for
+    simulation purposes? or we should implement another way to manage events and messages for a node already
+    disconnected (Timers in the messages or use the ping of SOC like an advertisement of connection)
+
+    TIMERS MEJOR IDEA PROBAMOS ESO
+
+    add the cases for the previous ones type of event to the method processEvent
+
+    add a method onConnectionToNetwork having as reference the one called onStartup()
+
+    add a method onDisconnectFromNetwork having as reference the one called onBatteryDepletion()
+
+    class Message looks okey
+    class Link looks okey
+    class Job looks okey
+
+    maybe methods onCouldNotReceiveMessage(Message<T> message),
+    onCouldNotSendMessage(TransferInfo<T> transferInfo), onMessageSentFailedToArrive(Message<T> message)
+    , of MessageHandler could be usefull for failed messages because a disconnect event
+
+	in NetworkModel private static double AckMessageSizeInBytes = 0; ?????????????????? REVISAR SI EL ACK SE USA O TIEMPO 0 //creo que no se usa como mensaje, 
+	solo se llama al metodo ack del emisor cuando el mensaje llega
+
+    for the scheduler:
+
+        we could use the wifi signal strength as reference for estimate the remaining connected time of a device, but is not a fateful way.
+
+        we also could use an historical log of connected time to estimate the remaining time until a disconnect event,
+        taken in care that people usually be in the same places for the same amount of time at the same time every day
+		
+	i start setting an input for testing using the same loadbalancer and comparator (SEAS), and the same wifi signal strength
+	
+	TEST-NetworkConnection-1-0
+		
+
+		
+	-
+	-
+	-
+	-
+	
+NEW QUESTIONS...
+What is cloudNode for?
+
+hasta que punto ser minusioso en el tratamiento de lapsos cortos de desconeccion y conexion?
+se debe por ejemplo conciderar que un dispositivo que se desconecta y reconecta si estaba transmitiendo o
+reciviendo algo estas transmiciones deben perderse? o en lapsos tan cortos como lo que dura la transmision podemos
+continuar solo chequeando al completar el envio o recepcion si el dispositivo esta conecctado (isOnline()).
+A la hora de retornar un dispositivo a la red que ya estuvo anteriormente, debe intentar enviar rptas a trabajos completados
+durante el tiempo fuera de la red? o vaciamos la cola de envios pendientes para nuevos trabajos? el lapso de tiempo
+para que estas rptas sigan siendo validas deberia ser muy pequeño o perderia sentido el fog computing, tal vez sea mejor
+para la simulacion ante un evento de reconeccion vaciar la cola de outputs pendientes, o aun mejor ante una desconexion
+evitar malgastar energia computando trabajo y eliminar los trabajos pendientes del dispositivo tanto como el en ejecucion
+actualmente. Teniendo en cuenta que la velocidad de rpta es el principal objetivo del fog computing por sobre otras
+arquitecturas como el cloud computing, lo mejor no seria optimizar la bateria y ante una desconexion vaciar completamente el
+dispositivo de tareas fuera de las del usuario? para que en una futura reconexion se lo tome como un dispositivo nuevo.
+Los trabajos en este caso figuraran como fallados (scheduled but not finished) y es trabajo del scheduler ver como reaccionar
+al no tener rpta de los trabajos (reenvio por timer, por ejemplo)
+
+Actualmente un dispositivo desconectado de la red no interrumpira su ejecucion de trabajos, tanto el trabajo
+ actual como aquellos encolados, aun cuando no podra ser capaz de retornar los resultados
+
+ pendientes:::: - al desconectarse de la red los devices pasan a modo reposo y dejan de ejecutar.
+                - al desconectarse de la red los devices en NetworkModel debo marcar como fallidos los mensajes
+                que tuvieran como destinatario al device desconectado (agregar una lista de mensajes al network model)
+                de otra forma si se reconecta antes del tiempo estimado de llegada del mensaje, este se da como correcto
+                en el diseño actual de simulacion
+                - para el scheduler agregar una logica de timers y retransmision de mensajes sin rpta
