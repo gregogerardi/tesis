@@ -107,6 +107,7 @@ public class DefaultExecutionManager implements ExecutionManager {
 		return this.pendingJobs.remove(index);
 	}
 
+
 	/**
 	 * Finishes the current Job
 	 * Tries to start a new one
@@ -168,6 +169,25 @@ public class DefaultExecutionManager implements ExecutionManager {
 		this.lastEvent=Event.createEvent(Event.NO_SOURCE, (long)time, this.device.getId(),
                 Device.EVENT_TYPE_FINISH_JOB, this.executing);
 		Simulation.addEvent(this.lastEvent);
+	}
+
+
+	/**
+	 * It is call when the device leaves the network
+	 * update the state of unfinished jobs to fail
+	 */
+	@Override
+	public void onDisconnect() {
+		for(Job job : this.pendingJobs)
+			JobStatsUtils.fail(job, NO_OPS);
+		pendingJobs.clear();
+		if(this.isExecuting()) {
+			JobStatsUtils.fail(this.executing,this.executedOps);
+			Simulation.removeEvent(this.lastEvent);
+			this.executing = null;
+			this.lastEvent = null;
+			batteryManager.onStopExecutingJobs();
+		}
 	}
 
 	/**

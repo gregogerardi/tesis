@@ -18,6 +18,7 @@ public interface ExecutionManager {
 	 * removes a job
 	 * @param index
 	 */
+
 	public Job removeJob(int index);
 
 	/**
@@ -51,4 +52,6 @@ public interface ExecutionManager {
 	 * Call when the device shutdown
 	 */
 	public void shutdown();
+
+	void onDisconnect();
 }

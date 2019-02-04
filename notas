@@ -70,8 +70,9 @@ Actualmente un dispositivo desconectado de la red no interrumpira su ejecucion d
  actual como aquellos encolados, aun cuando no podra ser capaz de retornar los resultados
 
  pendientes:::: - al desconectarse de la red los devices pasan a modo reposo y dejan de ejecutar.
-                - al desconectarse de la red los devices en NetworkModel debo marcar como fallidos los mensajes
+				- al desconectarse de la red los devices en NetworkModel debo marcar como fallidos los mensajes
                 que tuvieran como destinatario al device desconectado (agregar una lista de mensajes al network model)
                 de otra forma si se reconecta antes del tiempo estimado de llegada del mensaje, este se da como correcto
                 en el diseño actual de simulacion
                 - para el scheduler agregar una logica de timers y retransmision de mensajes sin rpta
+				

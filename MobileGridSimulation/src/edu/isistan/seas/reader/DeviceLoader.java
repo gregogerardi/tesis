@@ -186,6 +186,8 @@ public class DeviceLoader extends Thread {
 
 		// Configure dependencies between the device and its managers.
 		connectionManager.setDevice(device);
+		connectionManager.setBatteryManager(batteryManager);
+		connectionManager.setExecutionManager(executionManager);
 		batteryManager.setDevice(device);
 		executionManager.setDevice(device);
 		networkEnergyManager.setDevice(device);

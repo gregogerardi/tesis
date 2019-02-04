@@ -1,7 +1,9 @@
 package edu.isistan.seas.node;
 
+import edu.isistan.mobileGrid.node.BatteryManager;
 import edu.isistan.mobileGrid.node.ConnectionManager;
 import edu.isistan.mobileGrid.node.Device;
+import edu.isistan.mobileGrid.node.ExecutionManager;
 import edu.isistan.simulator.Logger;
 
 public class DefaultConnectionManager implements ConnectionManager {
@@ -12,9 +14,22 @@ public class DefaultConnectionManager implements ConnectionManager {
 
     private Device device;
 
+    private ExecutionManager executionManager;
+
+    private BatteryManager batteryManager;
+
+    public void setExecutionManager(ExecutionManager executionManager) {
+        this.executionManager = executionManager;
+    }
+
+    public void setBatteryManager(BatteryManager batteryManager) {
+        this.batteryManager = batteryManager;
+    }
+
     @Override
     public void onDisconnect() {
         connected=false;
+        executionManager.onDisconnect();
         Logger.logEntity(device, "Device leave the network");
     }
 
