@@ -29,7 +29,6 @@ public class DefaultConnectionManager implements ConnectionManager {
     @Override
     public void onDisconnect() {
         connected=false;
-        executionManager.onDisconnect();
         Logger.logEntity(device, "Device leave the network");
     }
 

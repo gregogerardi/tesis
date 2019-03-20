@@ -505,4 +505,16 @@ public class Logger {
 		DEBUG_OUTPUT_STREAM = debugFile;		
 	}
 
+	public static <T> void logString(String log, Object... data) {
+		if (!ENABLE) return;
+		StringBuffer logAux=new StringBuffer();
+		logAux.append(Simulation.getTime());
+		logAux.append(DATA_SEPARATOR);
+		logAux.append(log);
+		for(Object o: data){
+			logAux.append(DATA_SEPARATOR);
+			logAux.append(o);
+		}
+		println(logAux.toString());
+	}
 }

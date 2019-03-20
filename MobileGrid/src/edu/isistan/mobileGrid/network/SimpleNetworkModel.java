@@ -1,11 +1,7 @@
 package edu.isistan.mobileGrid.network;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
+import java.util.*;
 
-import edu.isistan.mobileGrid.jobs.Job;
 import edu.isistan.simulator.Entity;
 import edu.isistan.simulator.Event;
 import edu.isistan.simulator.Simulation;
@@ -51,7 +47,8 @@ public class SimpleNetworkModel extends NetworkModel {
 
             // Notifies receiver that it will start receiving data.
             dst.incomingData(scr, id);
-
+            //save the message being sender in case that the destination device disconnects and we need to fail the message
+			addMessageBeingTransmited(message);
             Simulation.addEvent(Event.createEvent(Event.NO_SOURCE, estimatedMessageReceivedTime,
                     this.getNetworkDelayEntityId(), 0, message));
             return estimatedMessageReceivedTime;

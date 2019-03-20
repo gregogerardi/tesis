@@ -280,6 +280,8 @@ public class Device extends Entity implements Node, DeviceListener {
                 }
                 SchedulerProxy.PROXY.remove(this);
                 connectionManager.onDisconnect();
+                executionManager.onDisconnect();
+                NetworkModel.getModel().onDisconnectNode(this);
                 break;
             case Device.EVENT_TYPE_CONNECT_DEVICE:
                 SchedulerProxy.PROXY.addDevice(this);
@@ -310,9 +312,6 @@ public class Device extends Entity implements Node, DeviceListener {
 		}
 	}
 
-    private void onDisconectFromNetwork() {
-
-    }
 
     protected <T> void queueMessageTransfer(Node destination, T data, long payloadSize) {
 	    queueMessageTransfer(destination, data, payloadSize, TransferInfo.PRIORITY_DEFAULT);
