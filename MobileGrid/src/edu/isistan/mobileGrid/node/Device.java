@@ -402,6 +402,7 @@ public class Device extends Entity implements Node, DeviceListener {
     public void failReception(Node scr, int id) {
         // TODO:provide an energy-aware treatment for a reception failure
         // message. For example, disable the wifi.
+        isReceiving = false;
     }
 
     /**

@@ -28,35 +28,38 @@ public class SimpleNetworkModel extends NetworkModel {
 	public final HashMap<Node, Long> lastTransferringTimes = new HashMap<Node, Long>();
 
 	@Override
-    public <T> long send(Node scr, Node dst, int id, int length, T data, int offset, boolean lastMessage) {
-        Message<T> message = new Message<>(id, scr, dst, data, length, offset, lastMessage);
+	public <T> long send(Node scr, Node dst, int id, int length, T data, int offset, boolean lastMessage) {
+		Message<T> message = new Message<>(id, scr, dst, data, length, offset, lastMessage);
+		return send(message);
+	}
 
-        Link link = getLink(scr, dst);
-        if(link.canSend(scr, dst)) {
-            long currentTime = Simulation.getTime();
-            long estimatedMessageReceivedTime = currentTime + link.getTransmissionTime(length);
+	public <T> long send(Message message) {
+		Link link = getLink(message.getSource(), message.getDestination());
+		if(link.canSend(message.getSource(), message.getDestination())) {
+			long currentTime = Simulation.getTime();
+			long estimatedMessageReceivedTime = currentTime + link.getTransmissionTime((int) message.getMessageSize());
 
-            // Updates first and last message sent timestamps. For post-simulation validation purposes only.
-            if(!firstTransferringTimes.containsKey(dst)) {
-                firstTransferringTimes.put(dst, currentTime);
-            }
-            lastTransferringTimes.put(scr, estimatedMessageReceivedTime);
+			// Updates first and last message sent timestamps. For post-simulation validation purposes only.
+			if(!firstTransferringTimes.containsKey(message.getDestination())) {
+				firstTransferringTimes.put(message.getDestination(), currentTime);
+			}
+			lastTransferringTimes.put(message.getSource(), estimatedMessageReceivedTime);
 
-            // Notifies sender that it will start sending data.
-            scr.startTransfer(dst, id, data);
+			// Notifies sender that it will start sending data.
+			message.getSource().startTransfer(message.getDestination(),message.getId(), message.getData());
 
-            // Notifies receiver that it will start receiving data.
-            dst.incomingData(scr, id);
-            //save the message being sender in case that the destination device disconnects and we need to fail the message
+			// Notifies receiver that it will start receiving data.
+			message.getDestination().incomingData(message.getSource(), message.getId());
+			//save the message being sended in case that the destination device disconnects and we need to fail the message
 			addMessageBeingTransmited(message);
-            Simulation.addEvent(Event.createEvent(Event.NO_SOURCE, estimatedMessageReceivedTime,
-                    this.getNetworkDelayEntityId(), 0, message));
-            return estimatedMessageReceivedTime;
-        } else {
-            scr.fail(message);
-        }
-        return 0;
-    }
+			Simulation.addEvent(Event.createEvent(Event.NO_SOURCE, estimatedMessageReceivedTime,
+					this.getNetworkDelayEntityId(), 0, message));
+			return estimatedMessageReceivedTime;
+		} else {
+			message.getSource().fail(message);
+		}
+		return 0;
+	}
 
 	private Link getLink(Node scr, Node dst) {
 		Link result = this.defaultLink;

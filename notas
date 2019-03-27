@@ -74,5 +74,7 @@ Actualmente un dispositivo desconectado de la red no interrumpira su ejecucion d
                 que tuvieran como destinatario al device desconectado (agregar una lista de mensajes al network model)
                 de otra forma si se reconecta antes del tiempo estimado de llegada del mensaje, este se da como correcto
                 en el diseño actual de simulacion DONE
-                - para el scheduler agregar una logica de timers y retransmision de mensajes sin rpta
-				
+                - para el scheduler agregar una logica de timers y retransmision de mensajes sin rpta : para esto herede la clase del load 
+				balancer que trate eventos de reintentos de mensajes (no de jobs completos) y agregue soporte para generar eventos tales
+				en el scheduler abstracto base. Como argumento al constructor del loadbalancer se pasa el tiempo entre reintentos y la cantidad
+				de ellos separados por '-'

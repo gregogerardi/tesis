@@ -21,6 +21,18 @@ public abstract class SchedulerProxy extends Entity  implements Node, DeviceList
 	
 	/* Size of message buffer for transfers in bytes */
 	private static final int MESSAGE_SIZE = 1024 * 1024;// 1mb
+    private static final long NO_RETRY = 0;
+    private long resendInterval = NO_RETRY;
+    private int amountOfReintents = (int) NO_RETRY;
+    private HashMap<Integer, Integer> messagesReintentsCount=new HashMap<>();
+
+    public void setResendInterval(long resendInterval) {
+        this.resendInterval = resendInterval;
+    }
+
+    public void setAmountOfReintents(int amountOfReintents) {
+        this.amountOfReintents = amountOfReintents;
+    }
 
     /**
      * Information currently known by the proxy about its different nodes. Maps the Node to the object containing
@@ -28,7 +40,8 @@ public abstract class SchedulerProxy extends Entity  implements Node, DeviceList
      */
     private WeakHashMap<Node, DeviceData> deviceDataMap = new WeakHashMap<>();
 
-	public static final int EVENT_JOB_ARRIVE = 1;
+    public static final int EVENT_JOB_ARRIVE = 1;
+    public static final int EVENT_MESSAGE_RETRY = 2;
 
     /**
      * Processes an event dispatched by the {@link Simulation}.
@@ -44,13 +57,13 @@ public abstract class SchedulerProxy extends Entity  implements Node, DeviceList
 
 	protected HashMap<String, Device> devices = new HashMap<String,Device>();
 
-	public SchedulerProxy(String name) {
-		super(name);
-		PROXY = this;
-		Simulation.addEntity(this);
-		NetworkModel.getModel().addNewNode(this);
-		Logger.logEntity(this, "Proxy created", this.getClass().getName());
-	}
+    public SchedulerProxy(String name) {
+        super(name);
+        PROXY = this;
+        Simulation.addEntity(this);
+        NetworkModel.getModel().addNewNode(this);
+        Logger.logEntity(this, "Proxy created", this.getClass().getName());
+    }
 	
 	/**
      * returns the remaining energy of the grid by aggregating the remaining energy of each node
@@ -200,10 +213,32 @@ public abstract class SchedulerProxy extends Entity  implements Node, DeviceList
         }
 	}
 
+
+    /**
+     * Provides a treatment for a {@link Message} sent failure
+     */
 	@Override
 	public void fail(Message message) {
-		// TODO Auto-generated method stub
-		
+        Logger.logString("Message sent by the proxy fail", message.getId(),message.getOffset(),message.isLastMessage());
+            if (resendInterval !=NO_RETRY){
+                if (!messagesReintentsCount.containsKey(message.getId())){
+                    messagesReintentsCount.put(message.getId(),0);
+                }
+                int currentAmountOfReintents =messagesReintentsCount.get(message.getId());
+                if (currentAmountOfReintents<amountOfReintents) {
+                    long retryTime = Simulation.getTime() + resendInterval;
+                    Event retryEvent = Event.createEvent(Event.NO_SOURCE, retryTime, this.getId(), EVENT_MESSAGE_RETRY, message);
+                    Simulation.addEvent(retryEvent);
+                    messagesReintentsCount.replace(message.getId(),++currentAmountOfReintents);
+                    Logger.logString("Message scheduled for resend", message.getId(),message.getOffset(),message.isLastMessage(),currentAmountOfReintents);
+                }
+                else{
+                    if(message.getDestination() instanceof Device)
+                    messagesReintentsCount.remove(message.getId());
+                    deviceDataMap.remove(message.getDestination());
+                    Logger.logString("M     essage sent by the proxy fail to by resented", message.getId(),message.getOffset(),message.isLastMessage());
+                }
+            }
 	}
 
 	@Override
@@ -211,7 +246,7 @@ public abstract class SchedulerProxy extends Entity  implements Node, DeviceList
 		return true;
 	}
 
-	private long sendMessage(Node destination, Object data, int messageSize, int offset, boolean lastMessage) {
+	protected long sendMessage(Node destination, Object data, int messageSize, int offset, boolean lastMessage) {
         return NetworkModel.getModel().send(this, destination, destination.getId(),
                 messageSize, data, offset, lastMessage);
     }
@@ -220,10 +255,15 @@ public abstract class SchedulerProxy extends Entity  implements Node, DeviceList
 		this.devices.remove(device.getName());
 	}
 
-	public void addDevice(Device device) {
-	    this.devices.put(device.getName(), device);
-	    this.deviceDataMap.put(device, new DeviceData(device.getInitialSOC()));
-	}
+    public void addDevice(Device device) {
+        this.devices.put(device.getName(), device);
+        if (this.deviceDataMap.containsKey(device)){
+            this.deviceDataMap.get(device).lastReportedStateOfCharge=device.getBatteryLevel();
+        }
+        else {
+            this.deviceDataMap.put(device, new DeviceData(device.getBatteryLevel()));
+        }
+    }
 
 	@Override
 	public void onDeviceFail(Node e) {
@@ -328,7 +368,6 @@ public abstract class SchedulerProxy extends Entity  implements Node, DeviceList
 	    for (DeviceData deviceData : this.deviceDataMap.values()) {
 	        transfers.addAll(deviceData.pendingTransfers);
         }
-
         return transfers;
     }
 
@@ -352,7 +391,7 @@ public abstract class SchedulerProxy extends Entity  implements Node, DeviceList
         return this.deviceDataMap.get(node).incomingJobs;
     }
 
-    private interface OnMessageSent {
+    protected interface OnMessageSent {
 	    void onMessageSent(Node destination, long ETA);
     }
 

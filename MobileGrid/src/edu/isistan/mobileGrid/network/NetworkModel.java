@@ -151,6 +151,8 @@ public abstract class NetworkModel {
         }
     }
 
+    public abstract <T> long send(Message message);
+
     /**
      * Proxy that simulates the overhead associated with data transmissions. When re-routing messages through this
      * entity, the {@link Device#onMessageReceived(Message)} method will be invoked on the destination device before

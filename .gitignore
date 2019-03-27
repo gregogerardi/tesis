@@ -6,3 +6,6 @@ MobileGrid/bin/edu/isistan/mobileGrid/node/Device$JobMessageHandler.class
 *.class
 *.class
 *.properties
+*.class
+*.class
+*.cnf

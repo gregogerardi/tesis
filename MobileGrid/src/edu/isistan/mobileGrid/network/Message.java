@@ -1,5 +1,7 @@
 package edu.isistan.mobileGrid.network;
 
+import edu.isistan.simulator.Entity;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
