@@ -31,7 +31,10 @@ public class DefaultManagerFactory implements ManagerFactory {
 	@Override
 	public Device createDevice(String name, BatteryManager bt, ExecutionManager em, NetworkEnergyManager nem, ConnectionManager cm) {
 		return new Device(name,bt,em,nem,cm);
-	}	
-	
+	}
 
+	@Override
+	public Device createDevice(String nodeName, DefaultBatteryManager batteryManager, DefaultExecutionManager executionManager, DefaultNetworkEnergyManager networkEnergyManager, DefaultConnectionManager connectionManager, int retryInterval, int amountOfRetries) {
+		return new Device(nodeName,batteryManager,executionManager,networkEnergyManager,connectionManager,retryInterval,amountOfRetries);
+	}
 }

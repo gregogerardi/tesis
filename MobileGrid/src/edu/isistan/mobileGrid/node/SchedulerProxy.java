@@ -17,22 +17,10 @@ import edu.isistan.simulator.Simulation;
  * Base class for the implementation of a centralized proxy that assigns jobs to arbitrary amounts for nodes
  * in a grid.
  */
-public abstract class SchedulerProxy extends Entity  implements Node, DeviceListener {
+public abstract class SchedulerProxy extends ReSenderEntity  implements Node, DeviceListener {
 	
 	/* Size of message buffer for transfers in bytes */
 	private static final int MESSAGE_SIZE = 1024 * 1024;// 1mb
-    private static final long NO_RETRY = 0;
-    private long resendInterval = NO_RETRY;
-    private int amountOfReintents = (int) NO_RETRY;
-    private HashMap<Integer, Integer> messagesReintentsCount=new HashMap<>();
-
-    public void setResendInterval(long resendInterval) {
-        this.resendInterval = resendInterval;
-    }
-
-    public void setAmountOfReintents(int amountOfReintents) {
-        this.amountOfReintents = amountOfReintents;
-    }
 
     /**
      * Information currently known by the proxy about its different nodes. Maps the Node to the object containing
@@ -41,7 +29,6 @@ public abstract class SchedulerProxy extends Entity  implements Node, DeviceList
     private WeakHashMap<Node, DeviceData> deviceDataMap = new WeakHashMap<>();
 
     public static final int EVENT_JOB_ARRIVE = 1;
-    public static final int EVENT_MESSAGE_RETRY = 2;
 
     /**
      * Processes an event dispatched by the {@link Simulation}.
@@ -83,7 +70,7 @@ public abstract class SchedulerProxy extends Entity  implements Node, DeviceList
 	@Override
 	public void startTransfer(Node dst, int id, Object data) {
 		// TODO Auto-generated method stub
-		
+
 	}
 	
 	@Override
@@ -95,6 +82,7 @@ public abstract class SchedulerProxy extends Entity  implements Node, DeviceList
 	@Override
 	public void failReception(Node scr, int id){
 		// TODO Auto-generated method stub
+
 	}
 	
 	@Override
@@ -213,35 +201,12 @@ public abstract class SchedulerProxy extends Entity  implements Node, DeviceList
         }
 	}
 
+    @Override
+    protected void failToRetry(Message message) {
+        deviceDataMap.remove(message.getDestination());
+    }
 
-    /**
-     * Provides a treatment for a {@link Message} sent failure
-     */
-	@Override
-	public void fail(Message message) {
-        Logger.logString("Message sent by the proxy fail", message.getId(),message.getOffset(),message.isLastMessage());
-            if (resendInterval !=NO_RETRY){
-                if (!messagesReintentsCount.containsKey(message.getId())){
-                    messagesReintentsCount.put(message.getId(),0);
-                }
-                int currentAmountOfReintents =messagesReintentsCount.get(message.getId());
-                if (currentAmountOfReintents<amountOfReintents) {
-                    long retryTime = Simulation.getTime() + resendInterval;
-                    Event retryEvent = Event.createEvent(Event.NO_SOURCE, retryTime, this.getId(), EVENT_MESSAGE_RETRY, message);
-                    Simulation.addEvent(retryEvent);
-                    messagesReintentsCount.replace(message.getId(),++currentAmountOfReintents);
-                    Logger.logString("Message scheduled for resend", message.getId(),message.getOffset(),message.isLastMessage(),currentAmountOfReintents);
-                }
-                else{
-                    if(message.getDestination() instanceof Device)
-                    messagesReintentsCount.remove(message.getId());
-                    deviceDataMap.remove(message.getDestination());
-                    Logger.logString("M     essage sent by the proxy fail to by resented", message.getId(),message.getOffset(),message.isLastMessage());
-                }
-            }
-	}
-
-	@Override
+    @Override
 	public boolean isOnline() {
 		return true;
 	}

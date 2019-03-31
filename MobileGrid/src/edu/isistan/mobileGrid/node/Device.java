@@ -23,7 +23,7 @@ import edu.isistan.simulator.Simulation;
  * </ul>
  * Jobs are received by this device, executed, and then their completion is reported back to the original sender.
  */
-public class Device extends Entity implements Node, DeviceListener {
+public class Device extends ReSenderEntity implements Node, DeviceListener {
 
     public static final int EVENT_TYPE_BATTERY_UPDATE = 0;
     public static final int EVENT_TYPE_CPU_UPDATE = 1;
@@ -128,6 +128,16 @@ public class Device extends Entity implements Node, DeviceListener {
 	    this.connectionManager =cm;
 	}
 
+    public Device(String name, BatteryManager bt, ExecutionManager em, NetworkEnergyManager nem, ConnectionManager cm, int retryInterval, int amountOfRetries) {
+        super(name);
+        this.batteryManager = bt;
+        this.executionManager = em;
+        this.networkEnergyManager = nem;
+        this.connectionManager =cm;
+        this.setResendInterval(retryInterval);
+        this.setAmountOfReintents(amountOfRetries);
+    }
+
     /**
      * Gets the message handler associated with the given data class type. Subclasses of {@link Device} that define
      * additional message types should overwrite this method to return their own message handlers, and defer back
@@ -229,7 +239,7 @@ public class Device extends Entity implements Node, DeviceListener {
 	}
 
 	@Override
-	public void fail(Message message) {
+	public void failToRetry(Message message) {
 	    getMessageHandler(message.getData()).onMessageSentFailedToArrive(message);
 
         // long time=Simulation.getTime()-jobStartTransferTime;
@@ -247,9 +257,20 @@ public class Device extends Entity implements Node, DeviceListener {
         return connectionManager.isConnected();
 	}
 
+
 	@Override
 	public void processEvent(Event event) {
 		switch (event.getEventType()) {
+            case EVENT_MESSAGE_RETRY:
+                Message message= (Message) event.getData();
+                if ((message.getDestination().isOnline())&&(!message.getDestination().isSending())&&(!message.getDestination().isReceiving())){
+                    Logger.logString("Message resended", message.getId(),message.getOffset(),message.isLastMessage());
+                    NetworkModel.getModel().send(message);
+                }
+                else{
+                    this.fail(message);
+                }
+                break;
             case Device.EVENT_TYPE_BATTERY_UPDATE:
                 int newBatteryLevel = (Integer) event.getData();
                 this.batteryManager.onBatteryEvent(newBatteryLevel);

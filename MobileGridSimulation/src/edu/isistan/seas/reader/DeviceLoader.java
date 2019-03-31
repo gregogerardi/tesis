@@ -24,10 +24,21 @@ public class DeviceLoader extends Thread {
 	
 	public static ManagerFactory MANAGER_FACTORY = new DefaultManagerFactory();
 
-    /**
-     * The name of this device.
-     */
+	/**
+	 * The name of this device.
+	 */
 	private String nodeName;
+
+	/**
+	 * The retry interval of retries.
+	 */
+	private int retryInterval;
+
+	/**
+	 * The amount of retries for a failed sent message.
+	 */
+	private int amountOfRetries;
+
     /**
      * The flops of the device's CPU.
      */
@@ -128,7 +139,17 @@ public class DeviceLoader extends Thread {
 		this.setBatteryCapacityInJoules(Long.MAX_VALUE);
 	}
 
-    /**
+	public DeviceLoader(String nodeName, long flops, int maxActiveJobs, boolean networkEnergyManagerEnable, int retryInterval, int amountOfRetries) {
+		this.nodeName = nodeName;
+		this.flops = flops;
+		this.maxActiveJobs = maxActiveJobs;
+		this.networkEnergyManagerEnable = networkEnergyManagerEnable;
+		this.setBatteryCapacityInJoules(Long.MAX_VALUE);
+		this.retryInterval = retryInterval;
+		this.amountOfRetries = amountOfRetries;
+	}
+
+	/**
      * Builds a parser to load the information relevant to a particular node (device) in the network.
      *
      * @param nodeName The name of the node.
@@ -144,6 +165,17 @@ public class DeviceLoader extends Thread {
 		this.maxActiveJobs = maxActiveJobs;
 		this.networkEnergyManagerEnable = networkEnergyManagementEnable;
 		this.setBatteryCapacityInJoules(batteryCapacityInJoules);
+	}
+
+	public DeviceLoader(String nodeName, long flops, int maxActiveJobs,
+						boolean networkEnergyManagementEnable, long batteryCapacityInJoules, int retryInterval, int amountOfRetries) {
+		this.nodeName = nodeName;
+		this.flops = flops;
+		this.maxActiveJobs = maxActiveJobs;
+		this.networkEnergyManagerEnable = networkEnergyManagementEnable;
+		this.setBatteryCapacityInJoules(batteryCapacityInJoules);
+		this.retryInterval = retryInterval;
+		this.amountOfRetries = amountOfRetries;
 	}
 
 	/**
@@ -175,9 +207,13 @@ public class DeviceLoader extends Thread {
 		DefaultExecutionManager executionManager = MANAGER_FACTORY.createExecutionManager();
 		executionManager.setMips(this.flops);
 		DefaultConnectionManager connectionManager = MANAGER_FACTORY.createConnectionManager();
-		Device device = MANAGER_FACTORY.createDevice(this.nodeName, batteryManager, executionManager, networkEnergyManager, connectionManager);
-
-
+		Device device;
+		if (retryInterval != 0){
+			device = MANAGER_FACTORY.createDevice(this.nodeName, batteryManager, executionManager, networkEnergyManager, connectionManager, retryInterval, amountOfRetries);
+		}
+		else {
+			device = MANAGER_FACTORY.createDevice(this.nodeName, batteryManager, executionManager, networkEnergyManager, connectionManager);
+		}
 		simLock.lock();
 		NetworkModel.getModel().addNewNode(device);
 		Simulation.addEntity(device);

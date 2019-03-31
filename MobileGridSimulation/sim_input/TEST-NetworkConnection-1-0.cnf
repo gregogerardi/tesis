@@ -3,7 +3,7 @@
 ;nodeFile
 sim_input/nodes/1TestDevice-1-0.cnf
 
-;loadBalancing: edu.isistan.gridgain.spi.loadbalacing.energyaware.GridEnergyAwareLoadBalancing
+;loadBalancing: edu.isistan.gridgain.spi.loadbalacing.energyaware.GridEnergyAwareWithTimerAndReintentsLoadBalancing 1000-3
 ;comparator: edu.isistan.gridgain.information.comparator.seas.EnhancedSEASComparator
 
 ;batteryFile

@@ -34,6 +34,12 @@ public class JobStealingFactory implements ManagerFactory {
 		return new JSDevice(name, bt, em, nem, cm);
 	}
 
+	@Override
+	public Device createDevice(String nodeName, DefaultBatteryManager batteryManager, DefaultExecutionManager executionManager, DefaultNetworkEnergyManager networkEnergyManager, DefaultConnectionManager connectionManager, int retryInterval, int amountOfRetries) {
+		//TODO Provide a resend aware treatment for jobstealingfactory
+		return new JSDevice(nodeName, batteryManager, executionManager, networkEnergyManager, connectionManager);
+	}
+
 	//todo provide a connection events aware treatment for the jobstealin logic
 	//for now we use the default connectionManager
 	@Override

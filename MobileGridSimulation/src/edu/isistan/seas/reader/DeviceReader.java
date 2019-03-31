@@ -57,14 +57,21 @@ public class DeviceReader {
 			long flops = Long.parseLong(st.nextToken());
 			int maxActiveJobs = Integer.parseInt(st.nextToken());
 			long batteryCapacityInJoules = Long.MAX_VALUE;
+			int retryInterval = 0;
+			int amountOfRetries = 0;
 			if(st.hasMoreTokens()) {
 				batteryCapacityInJoules=Long.parseLong(st.nextToken());
 			} else {
 				batteryCapacityUndefined = true;
 			}
+			if(st.hasMoreTokens()){
+				String[] retryInfo = st.nextToken().split("-");
+				retryInterval = Integer.parseInt(retryInfo[0]);
+				amountOfRetries = Integer.parseInt(retryInfo[1]);
+			}
 
 			DeviceLoader loader = new DeviceLoader(nodeId, flops, maxActiveJobs, networkEnergyManagementEnable,
-					batteryCapacityInJoules);
+					batteryCapacityInJoules, retryInterval, amountOfRetries);
 			DeviceTuple tuple =  new DeviceTuple(nodeId,flops,batteryCapacityInJoules,sim_id);
 			devicePersister.saveDeviceIntoMemory(nodeId, tuple);
 

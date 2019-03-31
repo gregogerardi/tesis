@@ -17,4 +17,7 @@ public interface ManagerFactory {
 	Device createDevice(String name, BatteryManager bt, ExecutionManager em, NetworkEnergyManager nem, ConnectionManager cm);
 
     DefaultConnectionManager createConnectionManager();
+
+    Device createDevice(String nodeName, DefaultBatteryManager batteryManager, DefaultExecutionManager executionManager, DefaultNetworkEnergyManager networkEnergyManager, DefaultConnectionManager connectionManager, int retryInterval, int amountOfRetries);
+
 }
