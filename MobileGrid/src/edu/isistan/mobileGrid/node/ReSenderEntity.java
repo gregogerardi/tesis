@@ -14,7 +14,7 @@ public abstract class ReSenderEntity extends Entity implements Node {
     private static final long NO_RETRY = 0;
     private long resendInterval = NO_RETRY;
     private int amountOfReintents = (int) NO_RETRY;
-    private HashMap<Integer, Integer> messagesReintentsCount=new HashMap<>();
+    private HashMap<String, Integer> messagesReintentsCount = new HashMap<>();
     public static final int EVENT_MESSAGE_RETRY = 99;
 
     public void setResendInterval(long resendInterval) {
@@ -25,37 +25,40 @@ public abstract class ReSenderEntity extends Entity implements Node {
         this.amountOfReintents = amountOfReintents;
     }
 
-    public ReSenderEntity(String name){
+    public ReSenderEntity(String name) {
         super(name);
+    }
+
+    private String parseKey(Message message) {
+        return ((String.valueOf(message.getId())) + (String.valueOf(message.getOffset())));
     }
 
     @Override
     public void fail(Message message) {
-        Logger.logString("Message sent failed", message.getSource().getId(), message.getId(),message.getOffset(),message.isLastMessage());
-        if (resendInterval !=NO_RETRY){
-            if (!messagesReintentsCount.containsKey(message.getId())){
-                messagesReintentsCount.put(message.getId(),0);
+        Logger.logString("Message sent failed", message.getSource().getId(), message.getId(), message.getOffset(), message.isLastMessage());
+        if (resendInterval != NO_RETRY) {
+            String key = parseKey(message);
+            if (!messagesReintentsCount.containsKey(key)) {
+                messagesReintentsCount.put(key, 0);
             }
-            int currentAmountOfReintents = messagesReintentsCount.get(message.getId());
-            if (currentAmountOfReintents<amountOfReintents) {
+            int currentAmountOfReintents = messagesReintentsCount.get(key);
+            if (currentAmountOfReintents < amountOfReintents) {
                 retry(message);
-                messagesReintentsCount.replace(message.getId(),++currentAmountOfReintents);
-                Logger.logString("Message scheduled to resend", message.getId(),message.getOffset(),message.isLastMessage(),currentAmountOfReintents);
-            }
-            else{
-                messagesReintentsCount.remove(message.getId());
+                messagesReintentsCount.replace(key, ++currentAmountOfReintents);
+                //Logger.logString("Message scheduled to resend", message.getId(), message.getOffset(), message.isLastMessage(), currentAmountOfReintents);
+            } else {
+                messagesReintentsCount.remove(key);
                 failToRetry(message);
-                Logger.logString("Message sent fail to be resented",message.getSource().getId(), message.getId(),message.getOffset(),message.isLastMessage());
+                Logger.logString("Message sent failed to be resend", message.getSource().getId(), message.getId(), message.getOffset(), message.isLastMessage());
             }
-        }
-        else{
+        } else {
             failToRetry(message);
         }
     }
 
     protected abstract void failToRetry(Message message);
 
-    private void retry(Message message){
+    private void retry(Message message) {
         long retryTime = Simulation.getTime() + resendInterval;
         Event retryEvent = Event.createEvent(Event.NO_SOURCE, retryTime, this.getId(), EVENT_MESSAGE_RETRY, message);
         Simulation.addEvent(retryEvent);

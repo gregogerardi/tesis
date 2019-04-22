@@ -153,7 +153,7 @@ public class Simulation {
 		System.out.println(JobStatsUtils.getTotalQueueTime());
 		System.out.println(JobStatsUtils.timeToHours(JobStatsUtils.getTotalQueueTime()));
 		long avgQueueTimePerJob = JobStatsUtils.getSize() == 0 ? 0 : JobStatsUtils.getTotalQueueTime()/JobStatsUtils.getSize();
-		System.out.println("Average queue time per job: "+avgQueueTimePerJob);
+		System.out.println("AverageFactory queue time per job: "+avgQueueTimePerJob);
 		
 		System.out.println(JobStatsUtils.timeToHours(avgQueueTimePerJob));
 		System.out.print("Total execution time: ");
@@ -161,7 +161,7 @@ public class Simulation {
 		System.out.println(JobStatsUtils.timeToHours(JobStatsUtils.getTotalExecutionTime()));
 		
 		long avgExecTimePerJob = JobStatsUtils.getSize() == 0 ? 0 : JobStatsUtils.getTotalExecutionTime()/JobStatsUtils.getSize();
-		System.out.println("Average execution time per job: "+avgExecTimePerJob);		
+		System.out.println("AverageFactory execution time per job: "+avgExecTimePerJob);
 		System.out.println(JobStatsUtils.timeToHours(avgExecTimePerJob));
 		
 		System.out.println("*****************************");
@@ -173,7 +173,7 @@ public class Simulation {
 		System.out.print("Wasted queue time: ");
 		System.out.println(wastedWaited);
 		System.out.println(JobStatsUtils.timeToHours(wastedWaited));
-		System.out.print("Average wasted queue time per failed job: ");		 
+		System.out.print("AverageFactory wasted queue time per failed job: ");
 		long wastedDivFailed = failed != 0 ? wastedWaited/failed : 0; 
 		System.out.println(wastedDivFailed);
 		String wasteDivFailedInHours = failed != 0 ? JobStatsUtils.timeToHours(wastedWaited/failed): "0";
@@ -181,7 +181,7 @@ public class Simulation {
 		System.out.print("Wasted execution time: ");
 		System.out.println(wastedExecution);
 		System.out.println(JobStatsUtils.timeToHours(wastedExecution));
-		System.out.print("Average wasted execution time per failed job: ");
+		System.out.print("AverageFactory wasted execution time per failed job: ");
 		wastedDivFailed = failed != 0 ? wastedExecution/failed : 0;
 		System.out.println(wastedDivFailed);
 		wasteDivFailedInHours = failed != 0 ? JobStatsUtils.timeToHours(wastedExecution/failed): "0"; 

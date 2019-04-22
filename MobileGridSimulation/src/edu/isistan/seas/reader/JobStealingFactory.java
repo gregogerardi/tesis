@@ -1,6 +1,7 @@
 package edu.isistan.seas.reader;
 
 import edu.isistan.mobileGrid.node.*;
+import edu.isistan.mobileGrid.node.movingAverageCalculators.factory.ConnectionScoreCalculatorFactory;
 import edu.isistan.seas.node.DefaultBatteryManager;
 import edu.isistan.seas.node.DefaultConnectionManager;
 import edu.isistan.seas.node.DefaultExecutionManager;
@@ -42,8 +43,11 @@ public class JobStealingFactory implements ManagerFactory {
 
 	//todo provide a connection events aware treatment for the jobstealin logic
 	//for now we use the default connectionManager
+
+
 	@Override
-	public DefaultConnectionManager createConnectionManager() {
-		return new DefaultConnectionManager();
+	public DefaultConnectionManager createConnectionManager(Class<ConnectionScoreCalculator> connectionScoreCalculatorClass, String[] connectionScoreCalculatorArgs) {
+		return new DefaultConnectionManager(connectionScoreCalculatorClass, connectionScoreCalculatorArgs);
 	}
+
 }

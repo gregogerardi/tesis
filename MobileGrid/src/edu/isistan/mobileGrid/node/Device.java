@@ -311,6 +311,7 @@ public class Device extends ReSenderEntity implements Node, DeviceListener {
                 SchedulerProxy.PROXY.updateDeviceSOC(this, getBatteryLevel());
                 setNextStatusNotification();
                 connectionManager.onConnect();
+                SchedulerProxy.PROXY.updateDeviceConnectionScore(this, connectionManager.getConnectionScore());
                 break;
             case Device.EVENT_TYPE_STATUS_NOTIFICATION:
                 // notify the proxy about my status

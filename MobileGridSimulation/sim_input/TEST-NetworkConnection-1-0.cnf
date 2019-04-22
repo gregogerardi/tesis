@@ -4,16 +4,13 @@
 sim_input/nodes/1TestDevice-1-0.cnf
 
 ;loadBalancing: edu.isistan.gridgain.spi.loadbalacing.energyaware.GridEnergyAwareWithTimerAndReintentsLoadBalancing 1000-3
-;comparator: edu.isistan.gridgain.information.comparator.seas.EnhancedSEASComparator
+;comparator: edu.isistan.gridgain.information.comparator.seas.MobilityComparator
 
 ;batteryFile
 sim_input/device_profile/TestDevice/battery0.cnf; 00000000-0000-0000-0000-000000000001
 
 ;batteryFullCpuUsageFile
 sim_input/device_profile/TestDevice/battery100.cnf; 00000000-0000-0000-0000-000000000001
-
-;connectionRelatedEventsFile
-sim_input/device_profile/TestDevice/connectionEvents.cnf; 00000000-0000-0000-0000-000000000001
 
 ;cpuFile
 sim_input/device_profile/TestDevice/cpu0.cnf; 00000000-0000-0000-0000-000000000001
@@ -23,3 +20,6 @@ sim_input/jobs/TestConnection1JOB.cnf
 
 ;wifiSignalStrength
 -50; 00000000-0000-0000-0000-000000000001
+
+;connectionRelatedEventsFile
+sim_input/device_profile/TestDevice/connectionEvents-1.cnf; 00000000-0000-0000-0000-000000000001

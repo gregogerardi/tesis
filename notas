@@ -32,7 +32,7 @@
 
     for the scheduler:
 
-        we could use the wifi signal strength as reference for estimate the remaining connected time of a device, but is not a fateful way.
+        we could use the wifi signal strength as reference for estimate the remaining connected time of a device, but is not a fateful way. NO
 
         we also could use an historical log of connected time to estimate the remaining time until a disconnect event,
         taken in care that people usually be in the same places for the same amount of time at the same time every day
@@ -67,7 +67,7 @@ Los trabajos en este caso figuraran como fallados (scheduled but not finished) y
 al no tener rpta de los trabajos (reenvio por timer, por ejemplo)
 
 Actualmente un dispositivo desconectado de la red no interrumpira su ejecucion de trabajos, tanto el trabajo
- actual como aquellos encolados, aun cuando no podra ser capaz de retornar los resultados
+actual como aquellos encolados, aun cuando no podra ser capaz de retornar los resultados
 
  pendientes:::: - al desconectarse de la red los devices pasan a modo reposo y dejan de ejecutar. DONE
 				- al desconectarse de la red los devices en NetworkModel debo marcar como fallidos los mensajes
@@ -78,3 +78,23 @@ Actualmente un dispositivo desconectado de la red no interrumpira su ejecucion d
 				balancer que trate eventos de reintentos de mensajes (no de jobs completos) y agregue soporte para generar eventos tales
 				en el scheduler abstracto base. Como argumento al constructor del loadbalancer se pasa el tiempo entre reintentos y la cantidad
 				de ellos separados por '-'
+				
+ para que el scheduler asuma que un dispositivo dejo la red actualmente se llama a un metodo cuando el dispositivo se desconecta, un enfoque mas realista podria ser
+ asumir que el device se desconecto cuando un mensaje hacia el mismo fallo, (metodo fail, actualmente usado para reintentos)
+ 
+ moving average. CHUSMEAR ALGORITMO PARA USAR DATOS DE TIEMPO CONECTADO Y DESCONECTADO
+	los devices lleven cuenta del tiempo conectados a un proxy e informan esta info cruda o ya como un score al scheduler en una conexion
+	el proxy va a mezclar la formula del seas con info de valor de conexion de los devices. DONE
+	para los eventos de conexion y desconexion leer los pdf de matias y simular conexiones estables e inestables, probar mezclas de devices con trazas estables y devices inestables para que 
+	se vea la efectividad del scheduler que sabe darse cuenta de esto.
+	
+	Agrege tambien un nuevo comparador que utiliza otros subcomparadores estandarizados para generar un score que sea un mix de distintos comparadores, por ahora pruebo el de movilidad aislado
+	pero a la hora de experimentar luego voy a correr tests mezclando ponderaciones del scheduler de movilidad con el SEAS base (u otros si queda tiempo)
+	
+	agregue un generador de eventos de conexion parametrizable para utilizar distintos generadores de intervalos, actuamente deje hecho uno random con extremos seteables 
+	y uno exponencial (para lograr una distribucion de intervalos de poisson) acorde al paper del 2003, deberia setear como parametros los extremos de los intervalos
+	
+	estoy generando entornos de entrada de datos, hasta ahora genere toda la carpeta nodos y tengo a medio codear el generador de eventos para
+	que recursivamente recorra las carpetas de nodos y genere un arbol de directorios igual pero para eventos de cada device
+	
+	

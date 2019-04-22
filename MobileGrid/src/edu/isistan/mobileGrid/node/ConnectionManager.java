@@ -15,9 +15,19 @@ public interface ConnectionManager {
     void onConnect();
 
     /**
-     * It return true if the device is connected to the network
+     * It is call when the device startup
      */
 
+    void onStartUp();
+
+    /**
+     * It returns the connection related score for this device
+     */
+    double getConnectionScore();
+
+    /**
+     * It return true if the device is connected to the network
+     */
     boolean isConnected();
 
     /**

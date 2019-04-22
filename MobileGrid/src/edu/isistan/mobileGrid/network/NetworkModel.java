@@ -6,6 +6,7 @@ import edu.isistan.simulator.Event;
 import edu.isistan.simulator.Logger;
 import edu.isistan.simulator.Simulation;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -141,13 +142,17 @@ public abstract class NetworkModel {
      * @param node The node disconnected from the network
      */
     public void onDisconnectNode(Node node) {
+        ArrayList<Message> messagesToBeDeleted=new ArrayList<>();
         for (Message message : messagesBeingTransmitted) {
             if (message.getDestination().equals(node) || message.getSource().equals(node)) {
-                Logger.logString("Message being transmited canceled because src or dst disconnected: ", message.getId(), message.getOffset());
-                messagesBeingTransmitted.remove(message);
-                message.getSource().fail(message);
-                message.getDestination().failReception(message.getSource(), message.getId());
+                messagesToBeDeleted.add(message);
             }
+        }
+        for(Message m :messagesToBeDeleted){
+            Logger.logString("Message being transmited canceled because src or dst disconnected: ", m.getId(), m.getOffset());
+            messagesBeingTransmitted.remove(m);
+            m.getSource().fail(m);
+            m.getDestination().failReception(m.getSource(), m.getId());
         }
     }
 

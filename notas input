@@ -10,9 +10,10 @@ using as example TEST[...] the structure is:
 
         this file indicates in one row for each device:
 
-        [device_name];[device_flops];[max_concurrent_active_jobs_supported](;[battery_capacity_in_joules])?
+        [device_name];[device_flops];[max_concurrent_active_jobs_supported](;[battery_capacity_in_joules])?;[time between retries]-[amount of retries per message]
 
-    ;loadBalancing: edu.isistan.gridgain.spi.loadbalacing.energyaware.GridEnergyAwareLoadBalancing //is the scheduler class selected, if the scheduler has argument should be indicated next to the class name
+    ;loadBalancing: edu.isistan.gridgain.spi.loadbalacing.energyaware.GridEnergyAwareLoadBalancing //is the scheduler class selected, if the scheduler has argument should be indicated next to the class name,
+	for the new scheduler with timers with add as argument [time between retries]-[amount of retries per message]
 
     ;comparator: edu.isistan.gridgain.information.comparator.seas.EnhancedSEASComparator // is the comparator used to choose the best device for CPU intensive tasks
 

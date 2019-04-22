@@ -1,6 +1,7 @@
 package edu.isistan.seas.reader;
 
 import edu.isistan.mobileGrid.node.*;
+import edu.isistan.mobileGrid.node.movingAverageCalculators.factory.ConnectionScoreCalculatorFactory;
 import edu.isistan.seas.node.DefaultBatteryManager;
 import edu.isistan.seas.node.DefaultConnectionManager;
 import edu.isistan.seas.node.DefaultExecutionManager;
@@ -16,8 +17,7 @@ public interface ManagerFactory {
 	
 	Device createDevice(String name, BatteryManager bt, ExecutionManager em, NetworkEnergyManager nem, ConnectionManager cm);
 
-    DefaultConnectionManager createConnectionManager();
-
     Device createDevice(String nodeName, DefaultBatteryManager batteryManager, DefaultExecutionManager executionManager, DefaultNetworkEnergyManager networkEnergyManager, DefaultConnectionManager connectionManager, int retryInterval, int amountOfRetries);
 
+    DefaultConnectionManager createConnectionManager(Class<ConnectionScoreCalculator> connectionScoreCalculatorClass, String[] connectionScoreCalculatorArgs);
 }

@@ -18,9 +18,9 @@ public class JobGeneratorInputRelated {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		if(args.length<9){
+		if(args.length<9) {
 			System.err.println("nOfJobs millisMinTime millisMaxTime opsFunction:[nlogn|n_2|n_3|all] maxFlop bytesMinInput bytesMaxInput bytesMinOutput bytesMaxOutput");
-		}		
+		}
 		int nJobs=Integer.parseInt(args[0]);
 		long minTime=Long.parseLong(args[1]); 
 	    long maxTime=Long.parseLong(args[2]);
